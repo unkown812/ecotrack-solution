@@ -1,5 +1,5 @@
 # robots.txt for MahiKosh
-# https://mahikosh.netlify.app/
+# https://mahikosh-solution.netlify.app/
 
 User-agent: *
 Allow: /
@@ -8,4 +8,4 @@ Allow: /assets/
 Disallow: /api/
 
 # Sitemap location
-Sitemap: https://mahikosh.netlify.app/sitemap.xml
+Sitemap: https://mahikosh-solution.netlify.app/sitemap.xml
