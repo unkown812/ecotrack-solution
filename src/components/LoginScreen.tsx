@@ -443,7 +443,7 @@ export default function LoginScreen({ onAuthSuccess }: LoginScreenProps) {
               <ul className="space-y-2">
                 <li><a href="#features" className="text-sm hover:text-white transition-colors">Features</a></li>
                 <li><a href="#auth-section" className="text-sm hover:text-white transition-colors">Sign Up</a></li>
-                <li><a href="https://MahiKosh-solution.netlify.app/blog/sustainable-living-for-beginners.html" className="text-sm hover:text-white transition-colors">Blog</a></li>
+                <li><a href="https://mahikosh-solution.netlify.app/blog/sustainable-living-for-beginners.html" className="text-sm hover:text-white transition-colors">Blog</a></li>
               </ul>
             </div>
             <div>

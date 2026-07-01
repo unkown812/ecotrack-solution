@@ -1,29 +1,21 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
-  Navigation,
-  Camera,
-  Home,
-  Gift,
-  Award,
-  Sparkles,
-  Leaf,
-  User,
-  Activity,
-  Trash2,
-  TrendingDown,
-  Bot,
-  Lightbulb,
+  Navigation, Camera, Home, Gift, Award, Sparkles, Leaf, User,
+  Activity, Trash2, TrendingDown, Bot, Lightbulb,
 } from "lucide-react";
 import { UserProfile, TripLog, MealLog, EnergyLog, RewardItem, TravelMode } from "./types";
 import {
-  calculateTravelCo2,
-  calculateEnergyCo2,
-  calculateTripEcoBucks,
-  determineEcoLevel,
-  REWARDS_CATALOG,
-  EMISSION_FACTORS,
+  calculateTravelCo2, calculateEnergyCo2, calculateTripEcoBucks,
+  determineEcoLevel, REWARDS_CATALOG, EMISSION_FACTORS,
 } from "./utils";
 import { useAuth } from "./hooks/useAuth";
+import {
+  getUserProfile, createUserProfile, setUserProfile, addCompletedTip,
+  getTrips, addTrip, deleteTrip,
+  getMeals, addMeal, deleteMeal,
+  getEnergyLogs, addEnergyLog, deleteEnergyLog,
+  getRedeemedRewards, addRedeemedReward,
+} from "./lib/firestoreService";
 import MetricCard from "./components/MetricCard";
 import TravelTracker from "./components/TravelTracker";
 import MealScanner from "./components/MealScanner";
@@ -35,97 +27,36 @@ import Chatbot from "./components/Chatbot";
 import LoginScreen from "./components/LoginScreen";
 import RecommendationsScreen from "./components/RecommendationsScreen";
 
-const INITIAL_TRIPS: TripLog[] = [
-  {
-    id: "seed-t1",
-    userId: "u123",
-    date: new Date(Date.now() - 48 * 3600 * 1000).toISOString().split("T")[0],
-    distance: 12.0,
-    mode: "bus",
-    duration: 2400,
-    co2_emission: 0.96,
-    routeCoordinates: [
-      { lat: 19.076, lng: 72.877 },
-      { lat: 19.096, lng: 72.867 },
-    ],
-    createdAt: new Date(Date.now() - 48 * 3600 * 1000).toISOString(),
-  },
-  {
-    id: "seed-t2",
-    userId: "u123",
-    date: new Date(Date.now() - 12 * 3600 * 1000).toISOString().split("T")[0],
-    distance: 4.5,
-    mode: "walk-bike",
-    duration: 1800,
-    co2_emission: 0,
-    routeCoordinates: [
-      { lat: 19.076, lng: 72.877 },
-      { lat: 19.086, lng: 72.887 },
-    ],
-    createdAt: new Date(Date.now() - 12 * 3600 * 1000).toISOString(),
-  },
-];
-
-const INITIAL_MEALS: MealLog[] = [
-  {
-    id: "seed-m1",
-    userId: "u123",
-    date: new Date(Date.now() - 36 * 3600 * 1000).toISOString().split("T")[0],
-    type: "veg",
-    description: "Vegetable dumplings with rice — light plant-based meal",
-    co2_emission: EMISSION_FACTORS.food.veg,
-    image_url: null,
-    createdAt: new Date(Date.now() - 36 * 3600 * 1000).toISOString(),
-  },
-];
-
-const INITIAL_ENERGY: EnergyLog[] = [
-  {
-    id: "seed-e1",
-    userId: "u123",
-    month: new Date().toLocaleString("en-US", { month: "long" }),
-    year: new Date().getFullYear(),
-    electricity_bill: 1500,
-    gas_bill: 700,
-    co2_emission: (1500 * EMISSION_FACTORS.energy.electricity_per_inr) + (700 * EMISSION_FACTORS.energy.gas_per_inr),
-    createdAt: new Date(Date.now() - 72 * 3600 * 1000).toISOString(),
-  },
-];
-
 const LEVEL_LABELS: Record<number, string> = {
-  1: "EcoStarter",
-  2: "Green Hero",
-  3: "Sustainable Star",
-  4: "Earth Guardian",
+  1: "EcoStarter", 2: "Green Hero", 3: "Sustainable Star", 4: "Earth Guardian",
 };
 
 type Tab = "dashboard" | "travel" | "food" | "energy" | "rewards" | "chatbot" | "tips";
 
 const TAB_TITLES: Record<string, string> = {
-  dashboard: "Dashboard — MahiKosh Carbon Footprint Tracker",
-  travel: "Travel CO₂ Tracker — MahiKosh Carbon Footprint",
-  food: "AI Meal Scanner — MahiKosh Carbon Footprint",
-  energy: "Home Energy Logger — MahiKosh Carbon Footprint",
-  rewards: "EcoBucks Rewards Marketplace — MahiKosh",
-  chatbot: "EcoBot AI Sustainability Assistant — MahiKosh",
-  tips: "Eco Tips & Sustainability Guide — MahiKosh",
+  dashboard: "Dashboard — EcoTrack Carbon Footprint Tracker",
+  travel: "Travel CO₂ Tracker — EcoTrack",
+  food: "AI Meal Scanner — EcoTrack",
+  energy: "Home Energy Logger — EcoTrack",
+  rewards: "EcoBucks Rewards Marketplace — EcoTrack",
+  chatbot: "EcoBot AI Sustainability Assistant — EcoTrack",
+  tips: "Eco Tips & Sustainability Guide — EcoTrack",
 };
+
+const defaultProfile = (uid: string, email: string, name: string): UserProfile => ({
+  uid, email, displayName: name,
+  eco_bucks: 100, level: 1, total_co2: 0,
+  goals: { monthly_co2_target: 200 },
+  completedTips: [],
+});
 
 export default function App() {
   const { user, loading: authLoading, isAvailable: authAvailable } = useAuth();
+  const uid = user?.uid || "local";
+  const email = user?.email || "mrunaljogane@gmail.com";
+  const displayName = user?.displayName || user?.email?.split("@")[0] || "Mrunal Jogane";
 
-  const [profile, setProfile] = useState<UserProfile>({
-    uid: "u123",
-    email: "mrunaljogane@gmail.com",
-    displayName: "Mrunal Jogane",
-    eco_bucks: 110,
-    level: 1,
-    total_co2: (0.96 + 0 + EMISSION_FACTORS.food.veg + (1500 * 0.005 + 700 * 0.0025)),
-    goals: {
-      monthly_co2_target: 200,
-    },
-  });
-
+  const [profile, setProfile] = useState<UserProfile>(defaultProfile(uid, email, displayName));
   const [trips, setTrips] = useState<TripLog[]>([]);
   const [meals, setMeals] = useState<MealLog[]>([]);
   const [energyLogs, setEnergyLogs] = useState<EnergyLog[]>([]);
@@ -135,182 +66,239 @@ export default function App() {
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [editName, setEditName] = useState("");
   const [editGoal, setEditGoal] = useState("");
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [authReady, setAuthReady] = useState(false);
 
   useEffect(() => {
-    document.title = TAB_TITLES[activeTab] || "MahiKosh — AI Carbon Footprint Tracker";
+    document.title = TAB_TITLES[activeTab] || "EcoTrack — AI Carbon Footprint Tracker";
   }, [activeTab]);
 
+  // ─── Initial data load: Firestore if authed, else localStorage ─────
   useEffect(() => {
-    try {
-      const savedProfile = localStorage.getItem("MahiKosh_profile");
-      const savedTrips = localStorage.getItem("MahiKosh_trips");
-      const savedMeals = localStorage.getItem("MahiKosh_meals");
-      const savedEnergy = localStorage.getItem("MahiKosh_energy");
-      const savedRewards = localStorage.getItem("MahiKosh_rewards");
+    if (authLoading) return;
+    setAuthReady(true);
 
-      if (savedProfile) setProfile(JSON.parse(savedProfile));
-      if (savedTrips) setTrips(JSON.parse(savedTrips));
-      else { setTrips(INITIAL_TRIPS); localStorage.setItem("MahiKosh_trips", JSON.stringify(INITIAL_TRIPS)); }
-      if (savedMeals) setMeals(JSON.parse(savedMeals));
-      else { setMeals(INITIAL_MEALS); localStorage.setItem("MahiKosh_meals", JSON.stringify(INITIAL_MEALS)); }
-      if (savedEnergy) setEnergyLogs(JSON.parse(savedEnergy));
-      else { setEnergyLogs(INITIAL_ENERGY); localStorage.setItem("MahiKosh_energy", JSON.stringify(INITIAL_ENERGY)); }
-      if (savedRewards) setRedeemedRewards(JSON.parse(savedRewards));
-      const savedTips = localStorage.getItem("MahiKosh_completed_tips");
-      if (savedTips) setCompletedTips(JSON.parse(savedTips));
-    } catch (e) {
-      console.error("Failed to load saved state:", e);
+    async function loadData() {
+      setInitialLoading(true);
+      try {
+        if (user) {
+          // ── Firestore path ──
+          let fbProfile = await getUserProfile(uid);
+          if (!fbProfile) {
+            fbProfile = await createUserProfile(uid, email, displayName);
+          }
+          setProfile(fbProfile);
+          setCompletedTips(fbProfile.completedTips || []);
+
+          const [fbTrips, fbMeals, fbEnergy, fbRewards] = await Promise.all([
+            getTrips(uid), getMeals(uid), getEnergyLogs(uid), getRedeemedRewards(uid),
+          ]);
+          setTrips(fbTrips);
+          setMeals(fbMeals);
+          setEnergyLogs(fbEnergy);
+          setRedeemedRewards(fbRewards);
+        } else {
+          // ── localStorage path ──
+          const savedProfile = localStorage.getItem("ecotrack_profile");
+          const savedTrips = localStorage.getItem("ecotrack_trips");
+          const savedMeals = localStorage.getItem("ecotrack_meals");
+          const savedEnergy = localStorage.getItem("ecotrack_energy");
+          const savedRewards = localStorage.getItem("ecotrack_rewards");
+          const savedTips = localStorage.getItem("ecotrack_completed_tips");
+
+          if (savedProfile) setProfile(JSON.parse(savedProfile));
+          if (savedTrips) setTrips(JSON.parse(savedTrips));
+          if (savedMeals) setMeals(JSON.parse(savedMeals));
+          if (savedEnergy) setEnergyLogs(JSON.parse(savedEnergy));
+          if (savedRewards) setRedeemedRewards(JSON.parse(savedRewards));
+          if (savedTips) setCompletedTips(JSON.parse(savedTips));
+        }
+      } catch (e) {
+        console.error("Failed to load data:", e);
+      } finally {
+        setInitialLoading(false);
+      }
     }
+
+    loadData();
+  }, [user, authLoading]);
+
+  // ─── Sync helpers ──────────────────────────────────────────────────
+
+  const saveToLocalStorage = useCallback((p: UserProfile, t: TripLog[], m: MealLog[], e: EnergyLog[], r: RewardItem[], tips: string[]) => {
+    localStorage.setItem("ecotrack_profile", JSON.stringify(p));
+    localStorage.setItem("ecotrack_trips", JSON.stringify(t));
+    localStorage.setItem("ecotrack_meals", JSON.stringify(m));
+    localStorage.setItem("ecotrack_energy", JSON.stringify(e));
+    localStorage.setItem("ecotrack_rewards", JSON.stringify(r));
+    localStorage.setItem("ecotrack_completed_tips", JSON.stringify(tips));
   }, []);
 
-  const updateLocalStorageAndState = (
-    newTrips: TripLog[],
-    newMeals: MealLog[],
-    newEnergy: EnergyLog[],
-    newRewards: RewardItem[],
-    ecoBucksModifier = 0,
-    directOverrideBucks?: number
-  ) => {
-    const tripSum = newTrips.reduce((sum, t) => sum + t.co2_emission, 0);
-    const mealSum = newMeals.reduce((sum, m) => sum + m.co2_emission, 0);
-    const energySum = newEnergy.reduce((sum, e) => sum + e.co2_emission, 0);
+  const computeProfile = useCallback((
+    p: UserProfile, t: TripLog[], m: MealLog[], e: EnergyLog[],
+    ecoBucksModifier = 0, directOverrideBucks?: number
+  ): UserProfile => {
+    const tripSum = t.reduce((s, v) => s + v.co2_emission, 0);
+    const mealSum = m.reduce((s, v) => s + v.co2_emission, 0);
+    const energySum = e.reduce((s, v) => s + v.co2_emission, 0);
     const totalCarbon = tripSum + mealSum + energySum;
-
-    let finalEcoBucks = directOverrideBucks !== undefined ? directOverrideBucks : profile.eco_bucks + ecoBucksModifier;
-    if (finalEcoBucks < 0) finalEcoBucks = 0;
-
-    const finalLevel = determineEcoLevel(finalEcoBucks);
-
-    const updatedProfile = {
-      ...profile,
+    let finalBucks = directOverrideBucks !== undefined ? directOverrideBucks : p.eco_bucks + ecoBucksModifier;
+    if (finalBucks < 0) finalBucks = 0;
+    return {
+      ...p,
       total_co2: Number(totalCarbon.toFixed(2)),
-      eco_bucks: finalEcoBucks,
-      level: finalLevel,
+      eco_bucks: finalBucks,
+      level: determineEcoLevel(finalBucks),
     };
+  }, []);
+
+  const updateAll = useCallback(async (
+    newTrips: TripLog[], newMeals: MealLog[], newEnergy: EnergyLog[],
+    newRewards: RewardItem[], tips: string[],
+    ecoBucksModifier = 0, directOverrideBucks?: number
+  ) => {
+    const updatedProfile = computeProfile(profile, newTrips, newMeals, newEnergy, ecoBucksModifier, directOverrideBucks);
 
     setProfile(updatedProfile);
     setTrips(newTrips);
     setMeals(newMeals);
     setEnergyLogs(newEnergy);
     setRedeemedRewards(newRewards);
+    setCompletedTips(tips);
 
-    localStorage.setItem("MahiKosh_profile", JSON.stringify(updatedProfile));
-    localStorage.setItem("MahiKosh_trips", JSON.stringify(newTrips));
-    localStorage.setItem("MahiKosh_meals", JSON.stringify(newMeals));
-    localStorage.setItem("MahiKosh_energy", JSON.stringify(newEnergy));
-    localStorage.setItem("MahiKosh_rewards", JSON.stringify(newRewards));
-  };
+    saveToLocalStorage(updatedProfile, newTrips, newMeals, newEnergy, newRewards, tips);
 
-  const handleAddTrip = (distance: number, mode: TravelMode, duration: number, routeCoordinates: { lat: number; lng: number }[]) => {
+    // Firestore sync (fire-and-forget)
+    if (user) {
+      try {
+        await setUserProfile(uid, {
+          uid, email: email, displayName: updatedProfile.displayName,
+          eco_bucks: updatedProfile.eco_bucks, level: updatedProfile.level,
+          total_co2: updatedProfile.total_co2, goals: updatedProfile.goals,
+          completedTips: tips,
+        });
+      } catch (e) {
+        console.error("Firestore sync error:", e);
+      }
+    }
+  }, [profile, user, uid, email, computeProfile, saveToLocalStorage]);
+
+  // ─── Handlers ──────────────────────────────────────────────────────
+
+  const handleAddTrip = async (distance: number, mode: TravelMode, duration: number, routeCoordinates: { lat: number; lng: number }[]) => {
     const emission = calculateTravelCo2(mode, distance);
     const ecoBucksAwarded = calculateTripEcoBucks(mode, distance);
-
     const newTrip: TripLog = {
-      id: `t-${Date.now()}`,
-      userId: profile.uid,
-      date: new Date().toISOString().split("T")[0],
-      distance,
-      mode,
-      duration,
+      id: `t-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      userId: uid, date: new Date().toISOString().split("T")[0],
+      distance, mode, duration,
       co2_emission: Number(emission.toFixed(2)),
-      routeCoordinates,
-      createdAt: new Date().toISOString(),
+      routeCoordinates, createdAt: new Date().toISOString(),
     };
+    const next = [newTrip, ...trips];
+    await updateAll(next, meals, energyLogs, redeemedRewards, completedTips, ecoBucksAwarded);
 
-    updateLocalStorageAndState([newTrip, ...trips], meals, energyLogs, redeemedRewards, ecoBucksAwarded);
+    if (user) {
+      const { id: _tid, ...tripData } = newTrip;
+      addTrip(tripData).catch(e => console.error("Firestore addTrip error:", e));
+    }
   };
 
-  const handleDeleteTrip = (id: string) => {
+  const handleDeleteTrip = async (id: string) => {
     const target = trips.find(t => t.id === id);
     if (!target) return;
-    const pointsToDeduct = -calculateTripEcoBucks(target.mode, target.distance);
-    updateLocalStorageAndState(trips.filter(t => t.id !== id), meals, energyLogs, redeemedRewards, pointsToDeduct);
+    const points = -calculateTripEcoBucks(target.mode, target.distance);
+    const next = trips.filter(t => t.id !== id);
+    await updateAll(next, meals, energyLogs, redeemedRewards, completedTips, points);
+    if (user) deleteTrip(id).catch(e => console.error("Firestore deleteTrip error:", e));
   };
 
-  const handleAddMeal = (type: "veg" | "non-veg", description: string, co2: number) => {
-    const pointsAwarded = type === "veg" ? 10 : 2;
-
+  const handleAddMeal = async (type: "veg" | "non-veg", description: string, co2: number) => {
+    const points = type === "veg" ? 10 : 2;
     const newMeal: MealLog = {
-      id: `m-${Date.now()}`,
-      userId: profile.uid,
-      date: new Date().toISOString().split("T")[0],
-      type,
-      description,
-      co2_emission: Number(co2.toFixed(2)),
-      image_url: null,
-      createdAt: new Date().toISOString(),
+      id: `m-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      userId: uid, date: new Date().toISOString().split("T")[0],
+      type, description, co2_emission: Number(co2.toFixed(2)),
+      image_url: null, createdAt: new Date().toISOString(),
     };
-
-    updateLocalStorageAndState(trips, [newMeal, ...meals], energyLogs, redeemedRewards, pointsAwarded);
+    const next = [newMeal, ...meals];
+    await updateAll(trips, next, energyLogs, redeemedRewards, completedTips, points);
+    if (user) addMeal({ ...newMeal, id: undefined! }).catch(e => console.error("Firestore addMeal error:", e));
   };
 
-  const handleDeleteMeal = (id: string) => {
+  const handleDeleteMeal = async (id: string) => {
     const target = meals.find(m => m.id === id);
     if (!target) return;
-    const pointsToDeduct = target.type === "veg" ? -10 : -2;
-    updateLocalStorageAndState(trips, meals.filter(m => m.id !== id), energyLogs, redeemedRewards, pointsToDeduct);
+    const points = target.type === "veg" ? -10 : -2;
+    const next = meals.filter(m => m.id !== id);
+    await updateAll(trips, next, energyLogs, redeemedRewards, completedTips, points);
+    if (user) deleteMeal(id).catch(e => console.error("Firestore deleteMeal error:", e));
   };
 
-  const handleAddEnergyLog = (month: string, year: number, electricity: number, gas: number) => {
+  const handleAddEnergyLog = async (month: string, year: number, electricity: number, gas: number) => {
     const emission = calculateEnergyCo2(electricity, gas);
-    const pointsAwarded = 25;
-
     const newLog: EnergyLog = {
-      id: `e-${Date.now()}`,
-      userId: profile.uid,
-      month,
-      year,
-      electricity_bill: electricity,
-      gas_bill: gas,
+      id: `e-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      userId: uid, month, year,
+      electricity_bill: electricity, gas_bill: gas,
       co2_emission: Number(emission.toFixed(2)),
       createdAt: new Date().toISOString(),
     };
-
-    updateLocalStorageAndState(trips, meals, [newLog, ...energyLogs], redeemedRewards, pointsAwarded);
+    const next = [newLog, ...energyLogs];
+    await updateAll(trips, meals, next, redeemedRewards, completedTips, 25);
+    if (user) addEnergyLog({ ...newLog, id: undefined! }).catch(e => console.error("Firestore addEnergy error:", e));
   };
 
-  const handleDeleteEnergy = (id: string) => {
-    updateLocalStorageAndState(trips, meals, energyLogs.filter(e => e.id !== id), redeemedRewards, -25);
+  const handleDeleteEnergy = async (id: string) => {
+    const next = energyLogs.filter(e => e.id !== id);
+    await updateAll(trips, meals, next, redeemedRewards, completedTips, -25);
+    if (user) deleteEnergyLog(id).catch(e => console.error("Firestore deleteEnergy error:", e));
   };
 
-  const handleClaimBucks = (tipId: string, bucks: number) => {
+  const handleClaimBucks = async (tipId: string, bucks: number) => {
     if (completedTips.includes(tipId)) return;
     const nextTips = [...completedTips, tipId];
-    setCompletedTips(nextTips);
-    localStorage.setItem("MahiKosh_completed_tips", JSON.stringify(nextTips));
-    const updatedProfile = { ...profile, eco_bucks: profile.eco_bucks + bucks };
+    const newBucks = profile.eco_bucks + bucks;
+    const updatedProfile = { ...profile, eco_bucks: newBucks, level: determineEcoLevel(newBucks), completedTips: nextTips };
     setProfile(updatedProfile);
-    localStorage.setItem("MahiKosh_profile", JSON.stringify(updatedProfile));
+    setCompletedTips(nextTips);
+    saveToLocalStorage(updatedProfile, trips, meals, energyLogs, redeemedRewards, nextTips);
+    if (user) {
+      addCompletedTip(uid, tipId).catch(e => console.error("Firestore addTip error:", e));
+      setUserProfile(uid, { eco_bucks: newBucks, level: updatedProfile.level, completedTips: nextTips }).catch(e => console.error("Firestore profile error:", e));
+    }
   };
 
-  const handleRedeemReward = (rewardId: string, cost: number) => {
+  const handleRedeemReward = async (rewardId: string, cost: number) => {
     const catalogItem = REWARDS_CATALOG.find(r => r.id === rewardId);
     if (!catalogItem || profile.eco_bucks < cost) return;
-
     const alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     const num = "0123456789";
-    const getRandomStr = (src: string, len: number) => Array.from({ length: len }, () => src[Math.floor(Math.random() * src.length)]).join("");
-    const couponCode = `ECO-${getRandomStr(alpha, 4)}-${getRandomStr(num, 4)}`;
-
+    const rand = (src: string, len: number) => Array.from({ length: len }, () => src[Math.floor(Math.random() * src.length)]).join("");
+    const couponCode = `ECO-${rand(alpha, 4)}-${rand(num, 4)}`;
     const redeemedItem: RewardItem = {
-      ...catalogItem,
-      couponCode,
-      redeemedAt: new Date().toISOString(),
+      ...catalogItem, couponCode, redeemedAt: new Date().toISOString(),
     };
-
-    updateLocalStorageAndState(trips, meals, energyLogs, [...redeemedRewards, redeemedItem], -cost);
+    const nextRewards = [...redeemedRewards, redeemedItem];
+    await updateAll(trips, meals, energyLogs, nextRewards, completedTips, -cost);
+    if (user) {
+      addRedeemedReward(uid, { ...catalogItem, couponCode, redeemedAt: redeemedItem.redeemedAt! }).catch(e => console.error("Firestore addReward error:", e));
+    }
   };
 
-  const handleSaveProfile = (e: React.FormEvent) => {
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     const updated = {
       ...profile,
       displayName: editName.trim() || profile.displayName,
       goals: { monthly_co2_target: parseInt(editGoal) || profile.goals.monthly_co2_target },
     };
-    setProfile(updated);
-    localStorage.setItem("MahiKosh_profile", JSON.stringify(updated));
     setIsEditProfileOpen(false);
+    setProfile(updated);
+    saveToLocalStorage(updated, trips, meals, energyLogs, redeemedRewards, completedTips);
+    if (user) {
+      setUserProfile(uid, { displayName: updated.displayName, goals: updated.goals }).catch(e => console.error("Firestore profile error:", e));
+    }
   };
 
   const handleOpenEditProfile = () => {
@@ -320,25 +308,17 @@ export default function App() {
   };
 
   const handleResetApp = () => {
-    if (confirm("Are you sure you want to delete all data? This cannot be undone.")) {
-      localStorage.clear();
-      setTrips([]);
-      setMeals([]);
-      setEnergyLogs([]);
-      setRedeemedRewards([]);
-      const defaultProfile: UserProfile = {
-        uid: "u123",
-        email: "mrunaljogane@gmail.com",
-        displayName: "Mrunal Jogane",
-        eco_bucks: 100,
-        level: 1,
-        total_co2: 0,
-        goals: { monthly_co2_target: 200 },
-      };
-      setProfile(defaultProfile);
-      localStorage.setItem("MahiKosh_profile", JSON.stringify(defaultProfile));
-      setActiveTab("dashboard");
-    }
+    if (!confirm("Are you sure you want to delete all data? This cannot be undone.")) return;
+    localStorage.clear();
+    setTrips([]);
+    setMeals([]);
+    setEnergyLogs([]);
+    setRedeemedRewards([]);
+    setCompletedTips([]);
+    const reset: UserProfile = defaultProfile(uid, email, displayName);
+    setProfile(reset);
+    localStorage.setItem("ecotrack_profile", JSON.stringify(reset));
+    setActiveTab("dashboard");
   };
 
   const getLevelColor = (lvl: number) => {
@@ -353,10 +333,13 @@ export default function App() {
 
   const progressRatio = Math.min(100, (profile.total_co2 / profile.goals.monthly_co2_target) * 100);
 
-  if (authLoading) {
+  if (authLoading || !authReady || initialLoading) {
     return (
       <div className="min-h-screen bg-bg flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+          <p className="text-xs text-muted font-medium">Loading your data...</p>
+        </div>
       </div>
     );
   }
@@ -374,7 +357,7 @@ export default function App() {
               <div className="w-9 h-9 bg-accent border-1.5 border-black rounded-xl shadow-hard-offset flex items-center justify-center text-white scale-90 sm:scale-100">
                 <Leaf className="w-5 h-5 fill-white/20" />
               </div>
-              <span className="font-display font-bold text-lg sm:text-xl tracking-tight text-fg">MahiKosh</span>
+              <span className="font-display font-bold text-lg sm:text-xl tracking-tight text-fg">EcoTrack</span>
             </div>
 
             <div className="flex items-center gap-3 sm:gap-4">
@@ -412,7 +395,7 @@ export default function App() {
               Hello, {profile.displayName}
             </h1>
             <p className="text-xs text-muted font-medium">
-              Tracking your carbon footprint with precision. Every action counts.
+              {user ? "Cloud-synced. Every action counts." : "Offline mode. Sign in to sync across devices."}
             </p>
           </div>
 
@@ -420,10 +403,8 @@ export default function App() {
             <button onClick={handleOpenEditProfile} className="clay-btn-secondary px-4 py-2 text-xs font-bold">
               Profile Settings
             </button>
-            <button
-              onClick={handleResetApp}
-              className="px-3 py-2 bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all"
-            >
+            <button onClick={handleResetApp}
+              className="px-3 py-2 bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all">
               <Trash2 className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Reset</span>
             </button>
@@ -544,65 +525,20 @@ export default function App() {
             {activeTab === "dashboard" && (
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <MetricCard
-                    id="metric-total-co2"
-                    title="Total Carbon Logged"
-                    value={profile.total_co2}
-                    unit="kg CO₂"
-                    icon={Leaf}
-                    colorClass="text-danger"
-                    bgAccentStyle="bg-red-50"
-                    description={`Monthly target: ${profile.goals.monthly_co2_target} kg`}
-                  />
-                  <MetricCard
-                    id="metric-points-earned"
-                    title="EcoBucks Balance"
-                    value={profile.eco_bucks}
-                    unit="Points"
-                    icon={Sparkles}
-                    colorClass="text-[#d08a11]"
-                    bgAccentStyle="bg-yellow-50"
-                    description={`Level ${profile.level} — ${LEVEL_LABELS[profile.level]}`}
-                  />
-                  <MetricCard
-                    id="metric-tracked-entries"
-                    title="Total Entries"
-                    value={trips.length + meals.length + energyLogs.length}
-                    unit="Items"
-                    icon={Activity}
-                    colorClass="text-success"
-                    bgAccentStyle="bg-green-50"
-                    description="Trips + Meals + Energy"
-                  />
+                  <MetricCard id="metric-total-co2" title="Total Carbon Logged" value={profile.total_co2} unit="kg CO₂" icon={Leaf} colorClass="text-danger" bgAccentStyle="bg-red-50" description={`Monthly target: ${profile.goals.monthly_co2_target} kg`} />
+                  <MetricCard id="metric-points-earned" title="EcoBucks Balance" value={profile.eco_bucks} unit="Points" icon={Sparkles} colorClass="text-[#d08a11]" bgAccentStyle="bg-yellow-50" description={`Level ${profile.level} — ${LEVEL_LABELS[profile.level]}`} />
+                  <MetricCard id="metric-tracked-entries" title="Total Entries" value={trips.length + meals.length + energyLogs.length} unit="Items" icon={Activity} colorClass="text-success" bgAccentStyle="bg-green-50" description="Trips + Meals + Energy" />
                 </div>
-
                 <EcoInsights trips={trips} energyLogs={energyLogs} meals={meals} />
                 <DashboardCharts trips={trips} energyLogs={energyLogs} meals={meals} />
               </div>
             )}
-
-            {activeTab === "travel" && (
-              <TravelTracker onAddTrip={handleAddTrip} trips={trips} onDeleteTrip={handleDeleteTrip} />
-            )}
-
-            {activeTab === "food" && (
-              <MealScanner onAddMeal={handleAddMeal} meals={meals} onDeleteMeal={handleDeleteMeal} />
-            )}
-
-            {activeTab === "energy" && (
-              <EnergyLogger onAddEnergyLog={handleAddEnergyLog} logs={energyLogs} onDeleteLog={handleDeleteEnergy} />
-            )}
-
-            {activeTab === "rewards" && (
-              <RewardsStore ecoBucks={profile.eco_bucks} onRedeemReward={handleRedeemReward} redeemedRewards={redeemedRewards} />
-            )}
-
-            {activeTab === "tips" && (
-              <RecommendationsScreen onClaimBucks={handleClaimBucks} completedTips={completedTips} />
-            )}
-            {activeTab === "chatbot" && (
-              <Chatbot trips={trips} energyLogs={energyLogs} meals={meals} userName={profile.displayName} />
-            )}
+            {activeTab === "travel" && <TravelTracker onAddTrip={handleAddTrip} trips={trips} onDeleteTrip={handleDeleteTrip} />}
+            {activeTab === "food" && <MealScanner onAddMeal={handleAddMeal} meals={meals} onDeleteMeal={handleDeleteMeal} />}
+            {activeTab === "energy" && <EnergyLogger onAddEnergyLog={handleAddEnergyLog} logs={energyLogs} onDeleteLog={handleDeleteEnergy} />}
+            {activeTab === "rewards" && <RewardsStore ecoBucks={profile.eco_bucks} onRedeemReward={handleRedeemReward} redeemedRewards={redeemedRewards} />}
+            {activeTab === "tips" && <RecommendationsScreen onClaimBucks={handleClaimBucks} completedTips={completedTips} />}
+            {activeTab === "chatbot" && <Chatbot trips={trips} energyLogs={energyLogs} meals={meals} userName={profile.displayName} />}
           </div>
         </div>
       </main>

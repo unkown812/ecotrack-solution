@@ -8,6 +8,7 @@ export interface UserProfile {
   goals: {
     monthly_co2_target: number;
   };
+  completedTips?: string[];
 }
 
 export type TravelMode = "car" | "bus" | "train" | "walk-bike";
