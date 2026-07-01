@@ -31,22 +31,22 @@
 
 ---
 
-## ✨ Features
+## Features
 
 | Feature | Description |
 |---------|-------------|
-| 🚗 **Travel CO₂ Tracker** | GPS trip tracking + manual entry. Calculates emissions for car, bus, train, walk/bike with Indian-context factors |
-| 🍽️ **AI Meal Scanner** | Snap a food photo — Google Gemini AI identifies the dish and estimates its carbon footprint instantly |
-| ⚡ **Home Energy Logger** | Log monthly electricity & gas bills in INR. Real-time CO₂ preview while typing |
-| 📊 **Dashboard & Analytics** | Interactive pie charts + timeline bar charts. Track your carbon goals with color-coded progress |
-| 🤖 **Gemini AI Insights** | Personalized weekly summaries + 3 actionable tips based on your actual activity data |
-| 💬 **EcoBot Chat** | Conversational AI sustainability assistant. Ask anything about your carbon footprint |
-| 🎮 **Gamification** | Earn EcoBucks for green choices. Level up: EcoStarter → Green Hero → Sustainable Star → Earth Guardian |
-| 🎁 **Rewards Marketplace** | Redeem EcoBucks for tree planting, eco-store discounts, and carbon offset certificates |
-| 💡 **Eco Tips Hub** | Actionable sustainability tips across travel, food, and energy categories with bonus rewards |
-| 🌍 **Offline-First** | Fully functional with localStorage. Optional Firebase sync for cross-device cloud storage |
+| **Travel CO₂ Tracker** | GPS trip tracking + manual entry. Calculates emissions for car, bus, train, walk/bike with Indian-context factors |
+| **AI Meal Scanner** | Snap a food photo — Google Gemini AI identifies the dish and estimates its carbon footprint instantly |
+| **Home Energy Logger** | Log monthly electricity & gas bills in INR. Real-time CO₂ preview while typing |
+| **Dashboard & Analytics** | Interactive pie charts + timeline bar charts. Track your carbon goals with color-coded progress |
+| **Gemini AI Insights** | Personalized weekly summaries + 3 actionable tips based on your actual activity data |
+| **EcoBot Chat** | Conversational AI sustainability assistant. Ask anything about your carbon footprint |
+| **Gamification** | Earn EcoBucks for green choices. Level up: EcoStarter → Green Hero → Sustainable Star → Earth Guardian |
+| **Rewards Marketplace** | Redeem EcoBucks for tree planting, eco-store discounts, and carbon offset certificates |
+| **Eco Tips Hub** | Actionable sustainability tips across travel, food, and energy categories with bonus rewards |
+| **Offline-First** | Fully functional with localStorage. Optional Firebase sync for cross-device cloud storage |
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ```
 Frontend:  React 19, TypeScript, Vite 6, Tailwind CSS v4
@@ -60,7 +60,7 @@ Animation: Motion (Framer Motion)
 Fonts:     Inter, Space Grotesk, JetBrains Mono
 ```
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 ecotrack/
@@ -86,7 +86,7 @@ ecotrack/
 └── package.json
 ```
 
-## 🚀 Getting Started
+## Getting Started
 
 ```bash
 # 1. Install dependencies
@@ -107,7 +107,7 @@ npm run build      # → dist/
 npm run start
 ```
 
-## 🔍 SEO Optimization
+## SEO Optimization
 
 EcoTrack is fully SEO-optimized for maximum search engine visibility:
 
@@ -133,7 +133,7 @@ EcoTrack is fully SEO-optimized for maximum search engine visibility:
 - **Long-tail:** "how to calculate my carbon footprint", "best free carbon footprint tracker app", "carbon footprint calculator India"
 - **Blog:** 12 articles each targeting a specific long-tail keyword with full SEO metadata
 
-## 🌐 Deployment
+## Deployment
 
 ### Netlify (Recommended)
 
@@ -155,7 +155,7 @@ VITE_FIREBASE_APP_ID=optional
 VITE_USE_FIREBASE_EMULATORS=false
 ```
 
-## 📊 Emission Factors (Indian Context)
+## Emission Factors (Indian Context)
 
 | Category | Factor | Source |
 |----------|--------|--------|
@@ -168,7 +168,7 @@ VITE_USE_FIREBASE_EMULATORS=false
 | Veg meal | 1.5 kg CO₂/serving | Plant-based diet |
 | Non-veg meal | 4.5 kg CO₂/serving | Meat-inclusive diet |
 
-## 🎮 Gamification Levels
+## Gamification Levels
 
 | Level | Title | EcoBucks Required |
 |-------|-------|------------------|
@@ -177,12 +177,12 @@ VITE_USE_FIREBASE_EMULATORS=false
 | 3 | Sustainable Star | 1,500 – 4,999 |
 | 4 | Earth Guardian | 5,000+ |
 
-## 🧪 Linting
+## Linting
 
 ```bash
 npm run lint    # TypeScript strict mode type checking
 ```
 
-## 📝 License
+## License
 
 Built with ❤️ for a sustainable future. Powered by Google Gemini AI.
