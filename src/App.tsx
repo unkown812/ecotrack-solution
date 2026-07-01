@@ -102,13 +102,13 @@ const LEVEL_LABELS: Record<number, string> = {
 type Tab = "dashboard" | "travel" | "food" | "energy" | "rewards" | "chatbot" | "tips";
 
 const TAB_TITLES: Record<string, string> = {
-  dashboard: "Dashboard — EcoTrack Carbon Footprint Tracker",
-  travel: "Travel CO₂ Tracker — EcoTrack Carbon Footprint",
-  food: "AI Meal Scanner — EcoTrack Carbon Footprint",
-  energy: "Home Energy Logger — EcoTrack Carbon Footprint",
-  rewards: "EcoBucks Rewards Marketplace — EcoTrack",
-  chatbot: "EcoBot AI Sustainability Assistant — EcoTrack",
-  tips: "Eco Tips & Sustainability Guide — EcoTrack",
+  dashboard: "Dashboard — MahiKosh Carbon Footprint Tracker",
+  travel: "Travel CO₂ Tracker — MahiKosh Carbon Footprint",
+  food: "AI Meal Scanner — MahiKosh Carbon Footprint",
+  energy: "Home Energy Logger — MahiKosh Carbon Footprint",
+  rewards: "EcoBucks Rewards Marketplace — MahiKosh",
+  chatbot: "EcoBot AI Sustainability Assistant — MahiKosh",
+  tips: "Eco Tips & Sustainability Guide — MahiKosh",
 };
 
 export default function App() {
@@ -137,26 +137,26 @@ export default function App() {
   const [editGoal, setEditGoal] = useState("");
 
   useEffect(() => {
-    document.title = TAB_TITLES[activeTab] || "EcoTrack — AI Carbon Footprint Tracker";
+    document.title = TAB_TITLES[activeTab] || "MahiKosh — AI Carbon Footprint Tracker";
   }, [activeTab]);
 
   useEffect(() => {
     try {
-      const savedProfile = localStorage.getItem("ecotrack_profile");
-      const savedTrips = localStorage.getItem("ecotrack_trips");
-      const savedMeals = localStorage.getItem("ecotrack_meals");
-      const savedEnergy = localStorage.getItem("ecotrack_energy");
-      const savedRewards = localStorage.getItem("ecotrack_rewards");
+      const savedProfile = localStorage.getItem("MahiKosh_profile");
+      const savedTrips = localStorage.getItem("MahiKosh_trips");
+      const savedMeals = localStorage.getItem("MahiKosh_meals");
+      const savedEnergy = localStorage.getItem("MahiKosh_energy");
+      const savedRewards = localStorage.getItem("MahiKosh_rewards");
 
       if (savedProfile) setProfile(JSON.parse(savedProfile));
       if (savedTrips) setTrips(JSON.parse(savedTrips));
-      else { setTrips(INITIAL_TRIPS); localStorage.setItem("ecotrack_trips", JSON.stringify(INITIAL_TRIPS)); }
+      else { setTrips(INITIAL_TRIPS); localStorage.setItem("MahiKosh_trips", JSON.stringify(INITIAL_TRIPS)); }
       if (savedMeals) setMeals(JSON.parse(savedMeals));
-      else { setMeals(INITIAL_MEALS); localStorage.setItem("ecotrack_meals", JSON.stringify(INITIAL_MEALS)); }
+      else { setMeals(INITIAL_MEALS); localStorage.setItem("MahiKosh_meals", JSON.stringify(INITIAL_MEALS)); }
       if (savedEnergy) setEnergyLogs(JSON.parse(savedEnergy));
-      else { setEnergyLogs(INITIAL_ENERGY); localStorage.setItem("ecotrack_energy", JSON.stringify(INITIAL_ENERGY)); }
+      else { setEnergyLogs(INITIAL_ENERGY); localStorage.setItem("MahiKosh_energy", JSON.stringify(INITIAL_ENERGY)); }
       if (savedRewards) setRedeemedRewards(JSON.parse(savedRewards));
-      const savedTips = localStorage.getItem("ecotrack_completed_tips");
+      const savedTips = localStorage.getItem("MahiKosh_completed_tips");
       if (savedTips) setCompletedTips(JSON.parse(savedTips));
     } catch (e) {
       console.error("Failed to load saved state:", e);
@@ -194,11 +194,11 @@ export default function App() {
     setEnergyLogs(newEnergy);
     setRedeemedRewards(newRewards);
 
-    localStorage.setItem("ecotrack_profile", JSON.stringify(updatedProfile));
-    localStorage.setItem("ecotrack_trips", JSON.stringify(newTrips));
-    localStorage.setItem("ecotrack_meals", JSON.stringify(newMeals));
-    localStorage.setItem("ecotrack_energy", JSON.stringify(newEnergy));
-    localStorage.setItem("ecotrack_rewards", JSON.stringify(newRewards));
+    localStorage.setItem("MahiKosh_profile", JSON.stringify(updatedProfile));
+    localStorage.setItem("MahiKosh_trips", JSON.stringify(newTrips));
+    localStorage.setItem("MahiKosh_meals", JSON.stringify(newMeals));
+    localStorage.setItem("MahiKosh_energy", JSON.stringify(newEnergy));
+    localStorage.setItem("MahiKosh_rewards", JSON.stringify(newRewards));
   };
 
   const handleAddTrip = (distance: number, mode: TravelMode, duration: number, routeCoordinates: { lat: number; lng: number }[]) => {
@@ -277,10 +277,10 @@ export default function App() {
     if (completedTips.includes(tipId)) return;
     const nextTips = [...completedTips, tipId];
     setCompletedTips(nextTips);
-    localStorage.setItem("ecotrack_completed_tips", JSON.stringify(nextTips));
+    localStorage.setItem("MahiKosh_completed_tips", JSON.stringify(nextTips));
     const updatedProfile = { ...profile, eco_bucks: profile.eco_bucks + bucks };
     setProfile(updatedProfile);
-    localStorage.setItem("ecotrack_profile", JSON.stringify(updatedProfile));
+    localStorage.setItem("MahiKosh_profile", JSON.stringify(updatedProfile));
   };
 
   const handleRedeemReward = (rewardId: string, cost: number) => {
@@ -309,7 +309,7 @@ export default function App() {
       goals: { monthly_co2_target: parseInt(editGoal) || profile.goals.monthly_co2_target },
     };
     setProfile(updated);
-    localStorage.setItem("ecotrack_profile", JSON.stringify(updated));
+    localStorage.setItem("MahiKosh_profile", JSON.stringify(updated));
     setIsEditProfileOpen(false);
   };
 
@@ -336,7 +336,7 @@ export default function App() {
         goals: { monthly_co2_target: 200 },
       };
       setProfile(defaultProfile);
-      localStorage.setItem("ecotrack_profile", JSON.stringify(defaultProfile));
+      localStorage.setItem("MahiKosh_profile", JSON.stringify(defaultProfile));
       setActiveTab("dashboard");
     }
   };
@@ -374,7 +374,7 @@ export default function App() {
               <div className="w-9 h-9 bg-accent border-1.5 border-black rounded-xl shadow-hard-offset flex items-center justify-center text-white scale-90 sm:scale-100">
                 <Leaf className="w-5 h-5 fill-white/20" />
               </div>
-              <span className="font-display font-bold text-lg sm:text-xl tracking-tight text-fg">EcoTrack</span>
+              <span className="font-display font-bold text-lg sm:text-xl tracking-tight text-fg">MahiKosh</span>
             </div>
 
             <div className="flex items-center gap-3 sm:gap-4">

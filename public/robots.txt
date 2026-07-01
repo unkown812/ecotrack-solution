@@ -1,5 +1,5 @@
-# robots.txt for EcoTrack
-# https://ecotrack-solution.netlify.app/
+# robots.txt for MahiKosh
+# https://MahiKosh-solution.netlify.app/
 
 User-agent: *
 Allow: /
@@ -8,4 +8,4 @@ Allow: /assets/
 Disallow: /api/
 
 # Sitemap location
-Sitemap: https://ecotrack-solution.netlify.app/sitemap.xml
+Sitemap: https://MahiKosh-solution.netlify.app/sitemap.xml

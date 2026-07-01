@@ -1,14 +1,14 @@
-# Netlify Redirects for EcoTrack
-# https://ecotrack-solution.netlify.app/
+# Netlify Redirects for MahiKosh
+# https://MahiKosh-solution.netlify.app/
 
 # SPA fallback — all routes serve index.html
 /*    /index.html    200
 
 # Force HTTPS
-*   https://ecotrack-solution.netlify.app/:splat   301!
+*   https://MahiKosh-solution.netlify.app/:splat   301!
 
 # Redirect www to non-www
-www.ecotrack.app/*    https://ecotrack-solution.netlify.app/:splat    301!
+www.MahiKosh.app/*    https://MahiKosh-solution.netlify.app/:splat    301!
 
 # Cache static assets aggressively
 /assets/*    /assets/:splat    200

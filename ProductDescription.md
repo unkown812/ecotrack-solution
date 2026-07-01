@@ -1,8 +1,8 @@
-# EcoTrack — AI Carbon Footprint Tracker & Sustainability Gamification Platform
+# MahiKosh — AI Carbon Footprint Tracker & Sustainability Gamification Platform
 
 ## Overview
 
-EcoTrack is a full-stack AI-powered web application that helps individuals track, understand, and reduce their personal carbon footprint. It combines real-time data logging, Google Gemini AI analysis, gamification mechanics, and a rewards marketplace to make sustainable living measurable and motivating.
+MahiKosh is a full-stack AI-powered web application that helps individuals track, understand, and reduce their personal carbon footprint. It combines real-time data logging, Google Gemini AI analysis, gamification mechanics, and a rewards marketplace to make sustainable living measurable and motivating.
 
 The app operates in two modes: **offline-first** (localStorage) with full functionality, and **cloud-synced** (Firebase Auth + Firestore) when configured.
 

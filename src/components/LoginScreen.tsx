@@ -122,7 +122,7 @@ export default function LoginScreen({ onAuthSuccess }: LoginScreenProps) {
             <div className="w-9 h-9 bg-accent rounded-xl border border-black flex items-center justify-center text-white">
               <Leaf className="w-5 h-5 fill-white/20" />
             </div>
-            <span className="font-display font-bold text-lg sm:text-xl tracking-tight text-fg">EcoTrack</span>
+            <span className="font-display font-bold text-lg sm:text-xl tracking-tight text-fg">MahiKosh</span>
           </div>
           <a href="#auth-section" className="clay-btn-interactive px-4 py-2 text-xs font-bold">Get Started Free</a>
         </nav>
@@ -140,7 +140,7 @@ export default function LoginScreen({ onAuthSuccess }: LoginScreenProps) {
                 {" "}with AI
               </h1>
               <p className="text-lg text-muted leading-relaxed max-w-lg">
-                EcoTrack is the intelligent carbon footprint tracker that measures your CO₂ emissions from travel, food, and home energy. Get personalized AI insights, earn EcoBucks rewards, and build a sustainable lifestyle — all in one app.
+                MahiKosh is the intelligent carbon footprint tracker that measures your CO₂ emissions from travel, food, and home energy. Get personalized AI insights, earn EcoBucks rewards, and build a sustainable lifestyle — all in one app.
               </p>
               <div className="flex flex-wrap gap-3">
                 <a href="#auth-section" className="clay-btn-interactive px-6 py-3 text-sm font-bold flex items-center gap-2">
@@ -257,7 +257,7 @@ export default function LoginScreen({ onAuthSuccess }: LoginScreenProps) {
             Your Carbon Footprint
           </h2>
           <p className="text-muted max-w-2xl mx-auto">
-            EcoTrack combines AI technology with gamification to make sustainable living measurable, motivating, and rewarding.
+            MahiKosh combines AI technology with gamification to make sustainable living measurable, motivating, and rewarding.
           </p>
         </div>
 
@@ -279,7 +279,7 @@ export default function LoginScreen({ onAuthSuccess }: LoginScreenProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 space-y-3">
             <h2 className="text-3xl md:text-4xl font-bold font-display text-fg">
-              How <span className="text-accent">EcoTrack</span> Works
+              How <span className="text-accent">MahiKosh</span> Works
             </h2>
             <p className="text-muted max-w-xl mx-auto">
               Getting started takes less than 2 minutes. Here's how to begin your sustainability journey.
@@ -384,7 +384,7 @@ export default function LoginScreen({ onAuthSuccess }: LoginScreenProps) {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
         <div className="text-center mb-10 space-y-3">
           <h2 className="text-3xl md:text-4xl font-bold font-display text-fg">
-            Latest from the <span className="text-accent">EcoTrack Blog</span>
+            Latest from the <span className="text-accent">MahiKosh Blog</span>
           </h2>
           <p className="text-muted max-w-xl mx-auto">
             Learn how to reduce your carbon footprint with actionable guides, tips, and research.
@@ -432,7 +432,7 @@ export default function LoginScreen({ onAuthSuccess }: LoginScreenProps) {
                 <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
                   <Leaf className="w-4 h-4 text-white fill-white/20" />
                 </div>
-                <span className="font-display font-bold text-white text-lg">EcoTrack</span>
+                <span className="font-display font-bold text-white text-lg">MahiKosh</span>
               </div>
               <p className="text-sm text-white/50 max-w-sm">
                 AI-powered carbon footprint tracker making sustainable living measurable, motivating, and rewarding for everyone.
@@ -443,7 +443,7 @@ export default function LoginScreen({ onAuthSuccess }: LoginScreenProps) {
               <ul className="space-y-2">
                 <li><a href="#features" className="text-sm hover:text-white transition-colors">Features</a></li>
                 <li><a href="#auth-section" className="text-sm hover:text-white transition-colors">Sign Up</a></li>
-                <li><a href="https://ecotrack-solution.netlify.app/blog/sustainable-living-for-beginners.html" className="text-sm hover:text-white transition-colors">Blog</a></li>
+                <li><a href="https://MahiKosh-solution.netlify.app/blog/sustainable-living-for-beginners.html" className="text-sm hover:text-white transition-colors">Blog</a></li>
               </ul>
             </div>
             <div>
@@ -456,7 +456,7 @@ export default function LoginScreen({ onAuthSuccess }: LoginScreenProps) {
             </div>
           </div>
           <div className="mt-10 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-xs text-white/40">&copy; 2026 EcoTrack. Built for a sustainable future.</p>
+            <p className="text-xs text-white/40">&copy; 2026 MahiKosh. Built for a sustainable future.</p>
             <div className="flex gap-4 text-xs text-white/40">
               <span>AI-Powered Carbon Footprint Tracker</span>
             </div>
